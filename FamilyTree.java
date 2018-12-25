@@ -3,11 +3,22 @@ import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.ArrayBlockingQueue;
 
-
+/**
+ * <h1>Family Tree Application</h1>
+ * This program creates a family tree object, and allows the user to perform operations on it such as finding the shortest path between people, adding new families, and checking membership.
+ * @author argonboron - Corrie McGregor
+ * @version 1.0
+ * @since 2018-12-23
+ */
 public class FamilyTree {
   private static Tree tree;
   private static ArrayList<Person> path = new ArrayList<>();
 
+  /**
+   * Writes new family to the raw data csv file.
+   * @param family The family to be written.
+   * @param filePath Filepath of the csv.
+   */
   private static void writeToCSV(Family family, String filePath){
     try {
       FileWriter writer = new FileWriter(filePath, true);
@@ -31,6 +42,11 @@ public class FamilyTree {
     }
   }
 
+  /**
+   * Gets the details of the family from the user and passes it to the tree.
+   * @param scanner the System.in scanner.
+   * @return The family that was added.
+   */
   private static Family addFamily(Scanner scanner) {
     boolean married = false;
     System.out.println("Enter Parents name(s)");
@@ -49,11 +65,16 @@ public class FamilyTree {
     return tree.addFamilyToTree(parentNames, childrenNames, year, married);
   }
 
+  /**
+   * Calls the shortest path algorithm and prints the path between two nodes.
+   * @param nameOne Name of source person.
+   * @param nameTwo Name of person being searched for.
+   */
   private static void findShortestPath(String nameOne, String nameTwo) {
     try {
       HashMap<String, Person> people = tree.getPeople();
       if (people.containsKey(nameOne) && people.containsKey(nameTwo)) {
-          findPath(people.get(nameOne), people.get(nameTwo));
+          getPath(people.get(nameOne), people.get(nameTwo));
           System.out.println("Distance: " + people.get(nameTwo).getDistance());
           for (int i = 0; i < people.get(nameTwo).getDistance()+1; i++) {
             System.out.println(path.get(i).getName());
@@ -75,11 +96,17 @@ public class FamilyTree {
     }
   }
 
-  private static void findPath(Person sourcePerson, Person searchPerson) throws InterruptedException {
+  /**
+   * Uses a modified breadth first search to find the shortest path between nodes and store the path between them. Djickstra's Algorithm.
+   * @param sourcePerson Source person.
+   * @param searchPerson Person being searched for.
+   * @throws InterruptedException Interrupted Exception
+   */
+  private static void getPath(Person sourcePerson, Person searchPerson) throws InterruptedException {
     ArrayList<Person> visited = new ArrayList<>();
-    HashMap<Person, Person> predecessorMap = new HashMap<Person, Person>();
-    ArrayBlockingQueue<Person> queue = new ArrayBlockingQueue<Person>(tree.getPeople().size()*500);
-    ArrayList<Integer> famIDs = sourcePerson.getFamilyIDs();
+    HashMap<Person, Person> predecessorMap = new HashMap<>();
+    ArrayBlockingQueue<Person> queue = new ArrayBlockingQueue<>(tree.getPeople().size() * 500);
+    ArrayList<Integer> famIDs;
     boolean found = false;
 
     visited.add(sourcePerson);
@@ -122,6 +149,12 @@ public class FamilyTree {
     }
   }
 
+  /**
+   * Gets the relationship between two people and returns it.
+   * @param personOne person one.
+   * @param personTwo person two.
+   * @return relationship between the people.
+   */
   private static String getRelationship(Person personOne, Person personTwo) {
     ArrayList<Integer> personOneFamilies = personOne.getFamilyIDs();
     ArrayList<Integer> personTwoFamilies = personTwo.getFamilyIDs();
@@ -164,6 +197,10 @@ public class FamilyTree {
     return null;
   }
 
+  /**
+   * Main program.
+   * @param args main method arguments.
+   */
   public static void main(String[] args) {
         boolean exitProgram = false;
         Scanner scanner = new Scanner(System.in);

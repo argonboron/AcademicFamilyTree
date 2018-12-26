@@ -222,15 +222,23 @@ public class FamilyTree {
     return null;
   }
 
+  /**
+   * Lists all the children of the person given if any;
+   * @param parentName The name of the parent.
+   */
   private static void listChildren(String parentName) {
     for(Integer id: tree.getPeople().get(parentName).getFamilyIDs()) {
       Family family = tree.getFamilies().get(id);
-      if (family.getParents().contains(tree.getPeople().get(parentName))) {
+      if (family.getParents().contains(tree.getPeople().get(parentName)) && family.getChildren().size() > 0) {
+        if (family.getParents().size() > 1) {
         System.out.print("\nwith ");
-        for (Person parent: family.getParents()) {
-          if (!parent.getName().equals(parentName)) {
-            System.out.print(parent.getName() + " ");
+          for (Person parent: family.getParents()) {
+            if (!parent.getName().equals(parentName)) {
+              System.out.print(parent.getName() + " ");
+            }
           }
+        } else {
+          System.out.print("\nAs a single parent");
         }
         System.out.println(":");
         for (Person child: family.getChildren()) {
@@ -238,10 +246,11 @@ public class FamilyTree {
         }
       }
     }
+    System.out.println();
   }
 
   /**
-   * Main program.
+   * Main program menu.
    * @param args main method arguments.
    */
   public static void main(String[] args) {
@@ -293,7 +302,7 @@ public class FamilyTree {
                           kidCount += tree.getFamilies().get(id).getChildren().size();
                         }
                       }
-                      System.out.println("Number of children: " + kidCount);
+                      System.out.println("\nNumber of children: " + kidCount);
                       if (kidCount > 0) {
                         listChildren(inputArray[1]);
                         kidCount = 0;

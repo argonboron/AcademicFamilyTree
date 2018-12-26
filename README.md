@@ -10,9 +10,9 @@ If you end up breaking anything do Ctrl-C or Cmd-C to emergency exit.
 Commands:
     path, <personName>, <personName>
     isMember, <personName>
+    listChildren, <personName>
     addFamily
     help
     quit
 
 hav fun b safe ly all <3
-

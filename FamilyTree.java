@@ -13,6 +13,7 @@ import java.util.concurrent.ArrayBlockingQueue;
 public class FamilyTree {
   private static Tree tree;
   private static ArrayList<Person> path = new ArrayList<>();
+  private static String via;
 
   /**
    * Writes new family to the raw data csv file.
@@ -75,13 +76,26 @@ public class FamilyTree {
       HashMap<String, Person> people = tree.getPeople();
       if (people.containsKey(nameOne) && people.containsKey(nameTwo)) {
           getPath(people.get(nameOne), people.get(nameTwo));
-          System.out.println("Distance: " + people.get(nameTwo).getDistance());
+          System.out.println("\n" + nameOne + " --> " + nameTwo);
+          System.out.println("Distance: " + people.get(nameTwo).getDistance() + "\n");
           for (int i = 0; i < people.get(nameTwo).getDistance()+1; i++) {
-            System.out.println(path.get(i).getName());
+            if (via != null) {
+              System.out.print(path.get(i).getName());
+              System.out.println(via);
+              via = null;
+            } else {
+              if (i == 0) {
+                System.out.print(" - ");
+              }
+              System.out.print(path.get(i).getName());
+              if (i != 0) {
+                  System.out.println();
+              }
+            }
             if(i < people.get(nameTwo).getDistance()) {
-              // if (i>=1) {
-              //   System.out.print(" who");
-              // }
+              if (i > 0) {
+                System.out.print(" - " + path.get(i).getName());
+              }
               System.out.print(getRelationship(path.get(i), path.get(i+1)));
             }
           }
@@ -178,6 +192,15 @@ public class FamilyTree {
     if (personOneRole.equals("child")) {
       switch (personTwoRole) {
         case "child":
+            StringBuilder parentNames = new StringBuilder();
+            ArrayList<Person> parents = family.getParents();
+            for (int i = 0; i < parents.size(); i++) {
+                parentNames.append(parents.get(i).getName());
+                if (parents.size() > 0 && i < parents.size()-1) {
+                    parentNames.append(", ");
+                }
+            }
+          via = " (via " + parentNames + ")";
           return " is siblings with ";
         case "parent":
           return " is a child of ";

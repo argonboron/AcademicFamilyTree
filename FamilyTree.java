@@ -78,28 +78,30 @@ public class FamilyTree {
           getPath(people.get(nameOne), people.get(nameTwo));
           System.out.println("\n" + nameOne + " --> " + nameTwo);
           System.out.println("Distance: " + people.get(nameTwo).getDistance() + "\n");
-          for (int i = 0; i < people.get(nameTwo).getDistance()+1; i++) {
-            if (via != null) {
-              System.out.print(path.get(i).getName());
-              System.out.println(via);
-              via = null;
-            } else {
-              if (i == 0) {
-                System.out.print(" - ");
+          if (people.get(nameTwo).getDistance() > 0) {
+              for (int i = 0; i < people.get(nameTwo).getDistance() + 1; i++) {
+                  if (via != null) {
+                      System.out.print(path.get(i).getName());
+                      System.out.println(via);
+                      via = null;
+                  } else {
+                      if (i == 0) {
+                          System.out.print(" - ");
+                      }
+                      System.out.print(path.get(i).getName());
+                      if (i != 0) {
+                          System.out.println();
+                      }
+                  }
+                  if (i < people.get(nameTwo).getDistance()) {
+                      if (i > 0) {
+                          System.out.print(" - " + path.get(i).getName());
+                      }
+                      System.out.print(getRelationship(path.get(i), path.get(i + 1)));
+                  }
               }
-              System.out.print(path.get(i).getName());
-              if (i != 0) {
-                  System.out.println();
-              }
-            }
-            if(i < people.get(nameTwo).getDistance()) {
-              if (i > 0) {
-                System.out.print(" - " + path.get(i).getName());
-              }
-              System.out.print(getRelationship(path.get(i), path.get(i+1)));
-            }
+              System.out.println();
           }
-          System.out.println();
           path.clear();
           tree.clearDistances();
       } else {
@@ -220,6 +222,24 @@ public class FamilyTree {
     return null;
   }
 
+  private static void listChildren(String parentName) {
+    for(Integer id: tree.getPeople().get(parentName).getFamilyIDs()) {
+      Family family = tree.getFamilies().get(id);
+      if (family.getParents().contains(tree.getPeople().get(parentName))) {
+        System.out.print("\nwith ");
+        for (Person parent: family.getParents()) {
+          if (!parent.getName().equals(parentName)) {
+            System.out.print(parent.getName() + " ");
+          }
+        }
+        System.out.println(":");
+        for (Person child: family.getChildren()) {
+          System.out.println(child.getName());
+        }
+      }
+    }
+  }
+
   /**
    * Main program.
    * @param args main method arguments.
@@ -263,8 +283,26 @@ public class FamilyTree {
                         break;
                     }
                 case "help":
-                    System.out.println("Commands:\n path, <person1>, <person2> - displays connection between two people\n addFamily - add a new family instance\n isMember, <person1> - check if a person is in the tree\n quit - exit program");
+                    System.out.println("Commands:\n path, <person1>, <person2> - displays connection between two people\n addFamily - add a new family instance\n isMember, <person1> - check if a person is in the tree\n listChildren, <person1> - list all the children of this person if any.\nquit - exit program");
                     break;
+                case "listChildren":
+                    int kidCount = 0;
+                    if (inputArray.length == 2) {
+                      for(Integer id: tree.getPeople().get(inputArray[1]).getFamilyIDs()) {
+                        if (tree.getFamilies().get(id).getParents().contains(tree.getPeople().get(inputArray[1]))) {
+                          kidCount += tree.getFamilies().get(id).getChildren().size();
+                        }
+                      }
+                      System.out.println("Number of children: " + kidCount);
+                      if (kidCount > 0) {
+                        listChildren(inputArray[1]);
+                        kidCount = 0;
+                      }
+                      break;
+                    } else {
+                      System.out.println("usage: listChildren, <name>");
+                      break;
+                    }
                 default:
                     System.out.println("incorrect command: type 'help' for a list of commands");
                     break;

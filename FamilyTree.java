@@ -227,6 +227,7 @@ public class FamilyTree {
    * @param parentName The name of the parent.
    */
   private static void listChildren(String parentName) {
+    System.out.println("\nChildren:");
     for(Integer id: tree.getPeople().get(parentName).getFamilyIDs()) {
       Family family = tree.getFamilies().get(id);
       if (family.getParents().contains(tree.getPeople().get(parentName)) && family.getChildren().size() > 0) {
@@ -247,6 +248,129 @@ public class FamilyTree {
       }
     }
     System.out.println();
+  }
+
+  /**
+   * Finds the number of descendants of a given person
+   * @param families the list of families that person is a parent in.
+   * @param generation how many generations deep the recursion has run.
+   */
+  private static void getGenerations(ArrayList<Family> families, int generation) {
+    int children = 0;
+    String generationLabel = "Number of grandchildren: ";
+    ArrayList<Family> newFamilies = new ArrayList<>();
+    for(Family family: families) {
+      for(Person child: family.getChildren()) {
+        if (isParent(child)) {
+          for(Integer id: child.getFamilyIDs()) {
+            if (isFamilyParent(child, tree.getFamilies().get(id)) && tree.getFamilies().get(id).getChildren().size() > 0) {
+              children += tree.getFamilies().get(id).getChildren().size();
+              newFamilies.add(tree.getFamilies().get(id));
+            }
+          }
+        }
+      }
+    }
+    if (children > 0) {
+      switch(generation) {
+        case 0:
+          System.out.println(generationLabel + children);
+          if (newFamilies.size() > 0) {
+            generation++;
+            getGenerations(newFamilies, generation);
+          }
+          break;
+        case 1:
+          generationLabel = "great grandchildren: ";
+          System.out.println("Number of " + generationLabel + children);
+          if (newFamilies.size() > 0) {
+            generation++;
+            getGenerations(newFamilies, generation);
+          }
+          break;
+        default:
+          if (generation > 1) {
+            generationLabel = "great grandchildren: ";
+            for (int i = 0; i < generation-1; i ++) {
+              generationLabel = "great-" + generationLabel;
+            }
+            System.out.println("Number of " + generationLabel + children);
+            if (newFamilies.size() > 0) {
+              generation++;
+              getGenerations(newFamilies, generation);
+            }
+          } else {
+            System.out.println("error");
+          }
+          break;
+      }
+    }
+  }
+
+
+  /**
+   * Returns whether a given person is a parent of the given family.
+   * @param person to be checked.
+   * @param family to check in.
+   * @return true if person is a parent.
+   */
+  private static boolean isFamilyParent(Person person, Family family) {
+    if (person.getFamilyIDs().contains(family.getID())){
+      if (family.getParents().contains(person)) {
+          return true;
+      }
+    }
+    return false;
+  }
+
+  /**
+   * Returns whether a given person is a parent of any family.
+   * @param person to be checked.
+   * @return true if person is a parent.
+   */
+  private static boolean isParent(Person person) {
+    for (Integer id: person.getFamilyIDs()){
+      Family family = tree.getFamilies().get(id);
+      if (family.getParents().contains(person)) {
+          return true;
+      }
+    }
+    return false;
+  }
+
+  private static void printParents(Person person) {
+      ArrayList<Person> parents = new ArrayList<>();
+      System.out.println("\nParents:");
+      for(Integer id: person.getFamilyIDs()) {
+          if (tree.getFamilies().get(id).getChildren().contains(person)) {
+              System.out.println("--");
+              for(Person parent: tree.getFamilies().get(id).getParents()) {
+                  if(!parents.contains(parent)) {
+                      parents.add(parent);
+                      System.out.println(parent.getName());
+                  }
+              }
+              System.out.println();
+          }
+      }
+      parents.clear();
+  }
+
+  private  static void printSiblings(Person person) {
+      for(Integer id: person.getFamilyIDs()) {
+          if (tree.getFamilies().get(id).getChildren().contains(person) && tree.getFamilies().get(id).getChildren().size() > 1) {
+              System.out.print("\nSiblings:\n(with parents: ");
+              for(Person eachParent: tree.getFamilies().get(id).getParents()) {
+                  System.out.print(eachParent.getName() + " ");
+              }
+              System.out.println(")");
+              for(Person sibling: tree.getFamilies().get(id).getChildren()) {
+                  if (!sibling.getName().equals(person.getName())) {
+                      System.out.println(sibling.getName());
+                  }
+              }
+          }
+      }
   }
 
   /**
@@ -292,26 +416,48 @@ public class FamilyTree {
                         break;
                     }
                 case "help":
-                    System.out.println("Commands:\n path, <person1>, <person2> - displays connection between two people\n addFamily - add a new family instance\n isMember, <person1> - check if a person is in the tree\n listChildren, <person1> - list all the children of this person if any.\nquit - exit program");
+                    System.out.println("Commands:\n path, <person1>, <person2> - displays connection between two people\n addFamily - add a new family instance\n isMember, <person1> - check if a person is in the tree\n listChildren, <person1> - list all the children of this person if any.\n stats - get current tree stats\n quit - exit program");
                     break;
                 case "listChildren":
                     int kidCount = 0;
-                    if (inputArray.length == 2) {
+                    ArrayList<Family> parentalFamilies = new ArrayList<>();
+                    if (inputArray.length == 2 && tree.getPeople().containsKey(inputArray[1])) {
                       for(Integer id: tree.getPeople().get(inputArray[1]).getFamilyIDs()) {
                         if (tree.getFamilies().get(id).getParents().contains(tree.getPeople().get(inputArray[1]))) {
                           kidCount += tree.getFamilies().get(id).getChildren().size();
+                          parentalFamilies.add(tree.getFamilies().get(id));
                         }
                       }
                       System.out.println("\nNumber of children: " + kidCount);
+                      getGenerations(parentalFamilies, 0);
+                      parentalFamilies.clear();
                       if (kidCount > 0) {
                         listChildren(inputArray[1]);
-                        kidCount = 0;
                       }
                       break;
                     } else {
-                      System.out.println("usage: listChildren, <name>");
+                      System.out.println("invalid input\nusage: listChildren, <name>");
                       break;
                     }
+                case "stats":
+                  System.out.println("People: " + tree.getPeople().size());
+                  System.out.println("Families: " + tree.getFamilies().size());
+                  break;
+                case "getDetails":
+                    if (inputArray.length ==2 ) {
+                        if (tree.getPeople().containsKey(inputArray[1])) {
+                            Person person = tree.getPeople().get(inputArray[1]);
+                            System.out.println(person.getName());
+                            printParents(person);
+                            printSiblings(person);
+                            listChildren(person.getName());
+                        } else {
+                            System.out.println("name not found");
+                        }
+                    } else {
+                        System.out.println("usage: getDetails, <name>");
+                    }
+                    break;
                 default:
                     System.out.println("incorrect command: type 'help' for a list of commands");
                     break;

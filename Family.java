@@ -90,6 +90,14 @@ public class Family {
 
   /**
    * Getter.
+   * @return The id of this family.
+   */
+  int getID() {
+    return id;
+  }
+
+  /**
+   * Getter.
    * @return The children in this family.
    */
   ArrayList<Person> getParents() {

@@ -12,6 +12,7 @@ Commands:
     isMember, <personName>
     listChildren, <personName>
     addFamily
+    stats
     help
     quit
 

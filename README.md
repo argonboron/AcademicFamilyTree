@@ -11,6 +11,7 @@ Commands:
     path, <personName>, <personName>
     isMember, <personName>
     listChildren, <personName>
+    getDetails, <personName>
     addFamily
     stats
     help

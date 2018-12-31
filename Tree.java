@@ -99,7 +99,7 @@ public class Tree {
    * @param strNum String to be checked.
    * @return if the string is numeric or not.
    */
-  private boolean isNumeric(String strNum) {
+  boolean isNumeric(String strNum) {
     try {
         int num = Integer.parseInt(strNum);
     } catch (NumberFormatException | NullPointerException nfe) {

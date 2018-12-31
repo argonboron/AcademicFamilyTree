@@ -12,6 +12,8 @@ class Person {
   private ArrayList<Integer> familyIDs = new ArrayList<>();
   private ArrayList<Person> spouses = new ArrayList<>();
   private int distanceFromSource;
+  private int numberOfChildren;
+  private int numberOfDescendants;
 
   /**
    * Getter.
@@ -19,6 +21,26 @@ class Person {
    */
   String getName() {
     return name;
+  }
+
+  int getNumberOfDescendants() {
+      return numberOfDescendants;
+  }
+
+  void addToDescendants(int newKids) {
+      numberOfDescendants+= newKids;
+  }
+
+  void setNumberOfDescendants(int newKids) {
+      numberOfDescendants = newKids;
+  }
+
+  int getNumberOfChildren() {
+      return numberOfChildren;
+  }
+
+  void setNumberOfChildren (int children) {
+      numberOfChildren = children;
   }
 
   /**

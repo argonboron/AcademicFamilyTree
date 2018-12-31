@@ -1,6 +1,7 @@
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
+import java.util.Map.Entry;
 import java.util.concurrent.ArrayBlockingQueue;
 
 /**
@@ -227,12 +228,11 @@ public class FamilyTree {
    * @param parentName The name of the parent.
    */
   private static void listChildren(String parentName) {
-    System.out.println("\nChildren:");
     for(Integer id: tree.getPeople().get(parentName).getFamilyIDs()) {
       Family family = tree.getFamilies().get(id);
       if (family.getParents().contains(tree.getPeople().get(parentName)) && family.getChildren().size() > 0) {
         if (family.getParents().size() > 1) {
-        System.out.print("\nwith ");
+        System.out.print("\nChildren:\nwith ");
           for (Person parent: family.getParents()) {
             if (!parent.getName().equals(parentName)) {
               System.out.print(parent.getName() + " ");
@@ -255,7 +255,7 @@ public class FamilyTree {
    * @param families the list of families that person is a parent in.
    * @param generation how many generations deep the recursion has run.
    */
-  private static void getGenerations(ArrayList<Family> families, int generation) {
+  private static void getGenerations(Person person, ArrayList<Family> families, int generation, boolean print) {
     int children = 0;
     String generationLabel = "Number of grandchildren: ";
     ArrayList<Family> newFamilies = new ArrayList<>();
@@ -274,18 +274,24 @@ public class FamilyTree {
     if (children > 0) {
       switch(generation) {
         case 0:
-          System.out.println(generationLabel + children);
+          if (print) {
+              System.out.println(generationLabel + children);
+          }
           if (newFamilies.size() > 0) {
             generation++;
-            getGenerations(newFamilies, generation);
+            person.addToDescendants(children);
+            getGenerations(person, newFamilies, generation, print);
           }
           break;
         case 1:
           generationLabel = "great grandchildren: ";
-          System.out.println("Number of " + generationLabel + children);
+          if (print) {
+              System.out.println("Number of " + generationLabel + children);
+          }
           if (newFamilies.size() > 0) {
             generation++;
-            getGenerations(newFamilies, generation);
+            person.addToDescendants(children);
+            getGenerations(person, newFamilies, generation, print);
           }
           break;
         default:
@@ -294,10 +300,13 @@ public class FamilyTree {
             for (int i = 0; i < generation-1; i ++) {
               generationLabel = "great-" + generationLabel;
             }
-            System.out.println("Number of " + generationLabel + children);
+            if (print) {
+                System.out.println("Number of " + generationLabel + children);
+            }
             if (newFamilies.size() > 0) {
               generation++;
-              getGenerations(newFamilies, generation);
+              person.addToDescendants(children);
+              getGenerations(person, newFamilies, generation, print);
             }
           } else {
             System.out.println("error");
@@ -356,7 +365,7 @@ public class FamilyTree {
       parents.clear();
   }
 
-  private  static void printSiblings(Person person) {
+  private static void printSiblings(Person person) {
       for(Integer id: person.getFamilyIDs()) {
           if (tree.getFamilies().get(id).getChildren().contains(person) && tree.getFamilies().get(id).getChildren().size() > 1) {
               System.out.print("\nSiblings:\n(with parents: ");
@@ -370,6 +379,97 @@ public class FamilyTree {
                   }
               }
           }
+      }
+  }
+
+  private static void getRankings(Scanner scanner) {
+        System.out.println("options: (mostKids, <number>)  (mostDescendants, <number>)");
+        boolean back = false;
+        while (!back) {
+            System.out.print(":");
+            String input = scanner.nextLine();
+            String[] inputArray = input.split(", ");
+            switch (inputArray[0]) {
+                case "quit":
+                    System.out.println("Usage: <command>, <parameter>, <parameter>\ntype 'help' for a list of commands");
+                    back = true;
+                    break;
+                case "mostKids":
+                    if (inputArray.length == 2 && tree.isNumeric(inputArray[1])) {
+                        int kidCount = 0;
+                        ArrayList<Integer> kidNums = new ArrayList<>();
+                        for (Entry<String, Person> pair : tree.getPeople().entrySet()) {
+                            Person person = pair.getValue();
+                            for (Integer id : person.getFamilyIDs()) {
+                                if (tree.getFamilies().get(id).getParents().contains(person)) {
+                                    kidCount += tree.getFamilies().get(id).getChildren().size();
+                                }
+                            }
+                            pair.getValue().setNumberOfChildren(kidCount);
+                            kidNums.add(kidCount);
+                            kidCount = 0;
+                        }
+                        ArrayList<Person> topParents = new ArrayList<>();
+                        Collections.sort(kidNums);
+                        Collections.reverse(kidNums);
+                        for (int i = 0; i < Integer.parseInt(inputArray[1]); i++) {
+                            int currentNumber = kidNums.get(i);
+                            for (Entry<String, Person> pair : tree.getPeople().entrySet()) {
+                                if (pair.getValue().getNumberOfChildren() == currentNumber && (!topParents.contains(pair.getValue()))) {
+                                    topParents.add(pair.getValue());
+                                    System.out.println(i + 1 + ". " + pair.getValue().getName() + "  " + kidNums.get(i) + " kids");
+                                    break;
+                                }
+                            }
+                        }
+                    } else {
+                        System.out.println("usage: mostKids, <top#ofpeople)");
+                    }
+                    break;
+                case "mostDescendants":
+                    getDescendants(inputArray);
+
+            }
+        }
+  }
+
+  private static void getDescendants(String[] inputArray) {
+      ArrayList<Family> parentalFamilies = new ArrayList<>();
+      ArrayList<Integer> descNums = new ArrayList<>();
+      if (inputArray.length == 2 && tree.isNumeric(inputArray[1])) {
+          for(Entry<String, Person> pair : tree.getPeople().entrySet()) {
+              int kidCount = 0;
+              for(Integer id: pair.getValue().getFamilyIDs()) {
+                  if (tree.getFamilies().get(id).getParents().contains(pair.getValue())) {
+                      kidCount += tree.getFamilies().get(id).getChildren().size();
+                      parentalFamilies.add(tree.getFamilies().get(id));
+                  }
+              }
+              if (kidCount > 0) {
+                  getGenerations(pair.getValue(), parentalFamilies, 0, false);
+                  pair.getValue().addToDescendants(kidCount);
+                  int descendants = pair.getValue().getNumberOfDescendants();
+                  descNums.add(descendants);
+              } else {
+                  pair.getValue().setNumberOfDescendants(0);
+              }
+              parentalFamilies.clear();
+          }
+          ArrayList<Person> topAncestors = new ArrayList<>();
+          Collections.sort(descNums);
+          Collections.reverse(descNums);
+          for (int i = 0; i < Integer.parseInt(inputArray[1]); i++) {
+              int currentNumber = descNums.get(i);
+              for (Entry<String, Person> pair : tree.getPeople().entrySet()) {
+                  if (pair.getValue().getNumberOfDescendants() == currentNumber && (!topAncestors.contains(pair.getValue()))) {
+                      topAncestors.add(pair.getValue());
+                      System.out.println(i + 1 + ". " + pair.getValue().getName() + "  " + descNums.get(i) + " descendants");
+                      break;
+                  }
+              }
+          }
+      } else {
+          System.out.println("usage: mostKids, <top#ofpeople)");
       }
   }
 
@@ -416,7 +516,7 @@ public class FamilyTree {
                         break;
                     }
                 case "help":
-                    System.out.println("Commands:\n path, <person1>, <person2> - displays connection between two people\n addFamily - add a new family instance\n isMember, <person1> - check if a person is in the tree\n listChildren, <person1> - list all the children of this person if any.\n stats - get current tree stats\n quit - exit program");
+                    System.out.println("Commands:\n path, <person1>, <person2> - displays connection between two people\n addFamily - add a new family instance\n isMember, <person1> - check if a person is in the tree\n listChildren, <person1> - list all the children of this person if any.\n getDetails, <person> - list this persons immediate family\n stats - get current tree stats\n quit - exit program");
                     break;
                 case "listChildren":
                     int kidCount = 0;
@@ -429,7 +529,7 @@ public class FamilyTree {
                         }
                       }
                       System.out.println("\nNumber of children: " + kidCount);
-                      getGenerations(parentalFamilies, 0);
+                      getGenerations(tree.getPeople().get(inputArray[1]), parentalFamilies, 0, true);
                       parentalFamilies.clear();
                       if (kidCount > 0) {
                         listChildren(inputArray[1]);
@@ -457,6 +557,9 @@ public class FamilyTree {
                     } else {
                         System.out.println("usage: getDetails, <name>");
                     }
+                    break;
+                case "rankings":
+                    getRankings(scanner);
                     break;
                 default:
                     System.out.println("incorrect command: type 'help' for a list of commands");

@@ -17,11 +17,11 @@ public class Tree {
 
   /**
    * Reads the csv file and extracts each family to create a Family object.
-   * @param csvFile
+   * @param csvFile the raw data for the tree.
    */
   private void createTree(String csvFile) {
     BufferedReader reader = null;
-    String line = "";
+    String line;
     String cvsSplitBy = ",";
     int familyID = 0;
     try {
@@ -50,7 +50,6 @@ public class Tree {
             }
           }
           families.put(familyID, family);
-        //  family.printFamily();
           onParents = true;
           familyID++;
         }
@@ -75,7 +74,7 @@ public class Tree {
    * @return The Person Object for the person that was added.
    */
   private Person addPerson(String name, int familyID) {
-    Person person = null;
+    Person person;
     if (!people.isEmpty()) {
       if (people.containsKey(name)) {
         person = people.get(name);
@@ -101,7 +100,7 @@ public class Tree {
    */
   boolean isNumeric(String strNum) {
     try {
-        int num = Integer.parseInt(strNum);
+        Integer.parseInt(strNum);
     } catch (NumberFormatException | NullPointerException nfe) {
         return false;
     }
@@ -145,7 +144,7 @@ public class Tree {
    * Getter.
    * @return Map of id's to Family objects.
    */
-  public HashMap<Integer, Family> getFamilies() {
+  HashMap<Integer, Family> getFamilies() {
     return families;
   }
 

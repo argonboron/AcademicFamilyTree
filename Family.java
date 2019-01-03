@@ -79,13 +79,6 @@ public class Family {
    */
   void setMarriage() {
     marriage = true;
-    for(Person parent: parents) {
-      for (Person parent1 : parents) {
-        if (!parent1.getName().equals(parent.getName())) {
-          parent.addMarriage(parent1);
-        }
-      }
-    }
   }
 
   /**

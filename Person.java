@@ -10,7 +10,6 @@ import java.util.ArrayList;
 class Person {
   private String name;
   private ArrayList<Integer> familyIDs = new ArrayList<>();
-  private ArrayList<Person> spouses = new ArrayList<>();
   private int distanceFromSource;
   private int numberOfChildren;
   private int numberOfDescendants;
@@ -23,16 +22,21 @@ class Person {
     return name;
   }
 
+    /**
+     * Getter.
+     * @return Number of Descendants.
+     */
   int getNumberOfDescendants() {
       return numberOfDescendants;
   }
+
 
   void addToDescendants(int newKids) {
       numberOfDescendants+= newKids;
   }
 
-  void setNumberOfDescendants(int newKids) {
-      numberOfDescendants = newKids;
+  void resetNumberOfDescendants() {
+      numberOfDescendants = 0;
   }
 
   int getNumberOfChildren() {
@@ -65,14 +69,6 @@ class Person {
    */
   ArrayList<Integer> getFamilyIDs() {
     return familyIDs;
-  }
-
-    /**
-     * Add marriage relationship to current person.
-     * @param spouse spouse.
-     */
-  void addMarriage(Person spouse) {
-    spouses.add(spouse);
   }
 
   /**

@@ -75,9 +75,11 @@ public class FamilyTree {
   private static void findShortestPath(String nameOne, String nameTwo) {
     try {
       HashMap<String, Person> people = tree.getPeople();
+      nameOne = nameOne.toLowerCase();
+      nameTwo = nameTwo.toLowerCase();
       if (people.containsKey(nameOne) && people.containsKey(nameTwo)) {
           getPath(people.get(nameOne), people.get(nameTwo));
-          System.out.println("\n" + nameOne + " --> " + nameTwo);
+          System.out.println("\n" + people.get(nameOne).getName() + " --> " + people.get(nameTwo).getName());
           System.out.println("Distance: " + people.get(nameTwo).getDistance() + "\n");
           if (people.get(nameTwo).getDistance() > 0) {
               for (int i = 0; i < people.get(nameTwo).getDistance() + 1; i++) {
@@ -122,7 +124,7 @@ public class FamilyTree {
   private static void getPath(Person sourcePerson, Person searchPerson) throws InterruptedException {
     ArrayList<Person> visited = new ArrayList<>();
     HashMap<Person, Person> predecessorMap = new HashMap<>();
-    ArrayBlockingQueue<Person> queue = new ArrayBlockingQueue<>(tree.getPeople().size() * 500);
+    ArrayBlockingQueue<Person> queue = new ArrayBlockingQueue<>(tree.getPeople().size() * 50);
     ArrayList<Integer> famIDs;
     boolean found = false;
 
@@ -228,18 +230,19 @@ public class FamilyTree {
    * @param parentName The name of the parent.
    */
   private static void listChildren(String parentName) {
+    parentName = parentName.toLowerCase();
     for(Integer id: tree.getPeople().get(parentName).getFamilyIDs()) {
       Family family = tree.getFamilies().get(id);
       if (family.getParents().contains(tree.getPeople().get(parentName)) && family.getChildren().size() > 0) {
         if (family.getParents().size() > 1) {
         System.out.print("\nChildren:\nwith ");
           for (Person parent: family.getParents()) {
-            if (!parent.getName().equals(parentName)) {
+            if (!parent.getName().toLowerCase().equals(parentName)) {
               System.out.print(parent.getName() + " ");
             }
           }
         } else {
-          System.out.print("\nAs a single parent");
+          System.out.print("\nChildren:\nAs a single parent");
         }
         System.out.println(":");
         for (Person child: family.getChildren()) {
@@ -415,6 +418,9 @@ public class FamilyTree {
       ArrayList<Person> topPeople = new ArrayList<>();
       Collections.sort(rankData);
       Collections.reverse(rankData);
+      if (name != null) {
+          name = name.toLowerCase();
+      }
       for (int i = 0; i < length; i++) {
           int currentNumber = rankData.get(i);
           for (Entry<String, Person> pair : tree.getPeople().entrySet()) {
@@ -422,14 +428,13 @@ public class FamilyTree {
               String printString = descendants ? " descendants" : " kids";
               if (comparator == currentNumber && (!topPeople.contains(pair.getValue()))) {
                   topPeople.add(pair.getValue());
-                  if (name == null || pair.getValue().getName().equals(name)) {
+                  if (name == null || pair.getKey().equals(name)) {
                       System.out.println(i+1 + ". " + pair.getValue().getName() + "  " + rankData.get(i) + printString);
                       if (name != null) {
                           System.out.println();
                         return;
                       }
                   }
-                  System.out.println();
                   break;
               }
           }
@@ -441,8 +446,10 @@ public class FamilyTree {
   }
 
   private static void getRankings(String name) {
-      if (tree.getPeople().containsKey(name)) {
+      if (tree.getPeople().containsKey(name.toLowerCase())) {
+          System.out.println("\nmost kids:");
           printRankings(getMostKids(), tree.getPeople().size(), false, name);
+          System.out.println("most descendants:");
           printRankings(getDescendants(), tree.getPeople().size(), true, name);
       } else {
           System.out.println("invalid name");
@@ -450,8 +457,8 @@ public class FamilyTree {
   }
 
   private static void getDetails(String name) {
-      if (tree.getPeople().containsKey(name)) {
-          Person person = tree.getPeople().get(name);
+      if (tree.getPeople().containsKey(name.toLowerCase())) {
+          Person person = tree.getPeople().get(name.toLowerCase());
           System.out.println(person.getName());
           printParents(person);
           printSiblings(person);
@@ -494,6 +501,7 @@ public class FamilyTree {
    */
   private static void countChildren(String name) {
       int kidCount = 0;
+      name = name.toLowerCase();
       ArrayList<Family> parentalFamilies = new ArrayList<>();
       if (tree.getPeople().containsKey(name)) {
           for(Integer id: tree.getPeople().get(name).getFamilyIDs()) {
@@ -526,7 +534,7 @@ public class FamilyTree {
             String input = scanner.nextLine();
             String[] inputArray = input.split(", ");
             switch (inputArray[0]) {
-                case "quit":
+                case "back":
                     System.out.println("Usage: <command>, <parameter>, <parameter>\ntype 'help' for a list of commands");
                     back = true;
                     break;
@@ -552,7 +560,7 @@ public class FamilyTree {
                     }
                     break;
                 case "help":
-                    System.out.println("options:\n mostKids, <number>\n mostDescendants, <number>\n ranking, <name>");
+                    System.out.println("options:\n mostKids, <number>\n mostDescendants, <number>\n ranking, <name>\n type 'back'to return to the main menu");
                     break;
             }
         }
@@ -589,7 +597,7 @@ public class FamilyTree {
                     break;
                 case "isMember":
                     if (isValid(inputArray, 2, false)) {
-                        if (tree.getPeople().containsKey(inputArray[1])) {
+                        if (tree.getPeople().containsKey(inputArray[1].toLowerCase())) {
                             System.out.println("Yes.");
                         } else {
                             System.out.println("No.");
@@ -599,7 +607,7 @@ public class FamilyTree {
                     }
                     break;
                 case "help":
-                    System.out.println("Commands:\n path, <person1>, <person2> - displays connection between two people\n addFamily - add a new family instance\n isMember, <person1> - check if a person is in the tree\n listChildren, <person1> - list all the children of this person if any.\n getDetails, <person> - list this persons immediate family\n rankings - go to rankings menu\n stats - get current tree stats\n quit - exit program");
+                    System.out.println("Commands:\n path, <person1>, <person2> - displays connection between two people\n addFamily - add a new family instance\n isMember, <person1> - check if a person is in the tree\n listChildren, <person1> - list all the children of this person if any.\n details, <person> - list this persons immediate family\n rankings - go to rankings menu\n stats - get current tree stats\n quit - exit program");
                     break;
                 case "listChildren":
                     if (isValid(inputArray, 2, false)) {
@@ -612,18 +620,18 @@ public class FamilyTree {
                   System.out.println("People: " + tree.getPeople().size());
                   System.out.println("Families: " + tree.getFamilies().size());
                   break;
-                case "getDetails":
+                case "details":
                     if (isValid(inputArray, 2, false)) {
                         getDetails(inputArray[1]);
                     }else {
-                        System.out.println("usage: getDetails, <name>");
+                        System.out.println("usage: details, <name>");
                     }
                     break;
                 case "rankings":
                     rankingsMenu(scanner);
                     break;
                 default:
-                    System.out.println("incorrect command: type 'help' for a list of commands");
+                    System.out.println("incorrect command: type 'help' for a list of commands, remember the commas!");
                     break;
             }
         }

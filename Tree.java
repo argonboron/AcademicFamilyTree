@@ -76,19 +76,19 @@ public class Tree {
   private Person addPerson(String name, int familyID) {
     Person person;
     if (!people.isEmpty()) {
-      if (people.containsKey(name)) {
-        person = people.get(name);
+      if (people.containsKey(name.toLowerCase())) {
+        person = people.get(name.toLowerCase());
         person.addFamilyID(familyID);
-        people.put(name, person);
+        people.put(name.toLowerCase(), person);
         return person;
       } else {
         person = new Person(name, familyID);
-        people.put(name, person);
+        people.put(name.toLowerCase(), person);
         return person;
       }
     } else {
       person = new Person(name, familyID);
-      people.put(name, person);
+      people.put(name.toLowerCase(), person);
       return person;
     }
   }

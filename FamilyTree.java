@@ -506,6 +506,7 @@ public class FamilyTree {
       ArrayList<Integer> descNums = new ArrayList<>();
       for(Entry<String, Person> pair : tree.getPeople().entrySet()) {
           int kidCount = 0;
+          pair.getValue().resetNumberOfDescendants();
           for(Integer id: pair.getValue().getFamilyIDs()) {
               if (tree.getFamilies().get(id).getParents().contains(pair.getValue())) {
                   kidCount += tree.getFamilies().get(id).getChildren().size();
@@ -578,6 +579,7 @@ public class FamilyTree {
                 case "mostDescendants":
                     if (isValid(inputArray, 2, true)) {
                         printRankings(getDescendants(), Integer.parseInt(inputArray[1]), true, null);
+
                     } else {
                         System.out.println("usage: mostDescendants, <number");
                     }

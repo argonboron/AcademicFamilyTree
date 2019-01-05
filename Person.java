@@ -22,27 +22,41 @@ class Person {
     return name;
   }
 
-    /**
-     * Getter.
-     * @return Number of Descendants.
-     */
+  /**
+   * Getter.
+   * @return Number of Descendants.
+   */
   int getNumberOfDescendants() {
       return numberOfDescendants;
   }
 
-
+  /**
+   * Add the new kids to the current total number of kids for this person.
+   * @param newKids the amount of new children since last call.
+   */
   void addToDescendants(int newKids) {
       numberOfDescendants+= newKids;
   }
 
+  /**
+   * Set number of descendants for this person to 0.
+   */
   void resetNumberOfDescendants() {
       numberOfDescendants = 0;
   }
 
+  /**
+   * Getter.
+   * @return Number of Children.
+   */
   int getNumberOfChildren() {
       return numberOfChildren;
   }
 
+  /**
+   * Set number of children to this number.
+   * @param children number of children.
+   */
   void setNumberOfChildren (int children) {
       numberOfChildren = children;
   }
@@ -79,11 +93,11 @@ class Person {
     familyIDs.add(id);
   }
 
-    /**
-     * Constructor.
-     * @param name person name.
-     * @param familyID Person family id.
-     */
+  /**
+   * Constructor.
+   * @param name person name.
+   * @param familyID Person family id.
+   */
   Person(String name, int familyID) {
     this.name = name;
     familyIDs.add(familyID);

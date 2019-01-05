@@ -257,6 +257,7 @@ public class FamilyTree {
    * Finds the number of descendants of a given person
    * @param families the list of families that person is a parent in.
    * @param generation how many generations deep the recursion has run.
+   * @param print whether the generation details of this method are to be printed or not.
    */
   private static void getGenerations(Person person, ArrayList<Family> families, int generation, boolean print) {
     int children = 0;
@@ -376,18 +377,24 @@ public class FamilyTree {
       parents.clear();
   }
 
+  /**
+   * Calculate how many children each person has.
+   * @return kidNums - list of children counts for every person in tree with children.
+   */
   private static ArrayList<Integer> getMostKids() {
       int kidCount = 0;
       ArrayList<Integer> kidNums = new ArrayList<>();
       for (Entry<String, Person> pair : tree.getPeople().entrySet()) {
           Person person = pair.getValue();
           for (Integer id : person.getFamilyIDs()) {
-              if (tree.getFamilies().get(id).getParents().contains(person)) {
+              if ((tree.getFamilies().get(id).getParents().contains(person)) && (tree.getFamilies().get(id).getChildren().size() > 0)) {
                   kidCount += tree.getFamilies().get(id).getChildren().size();
               }
           }
           pair.getValue().setNumberOfChildren(kidCount);
-          kidNums.add(kidCount);
+          if (pair.getValue().getNumberOfChildren() > 0) {
+              kidNums.add(kidCount);
+          }
           kidCount = 0;
       }
       return kidNums;
@@ -414,6 +421,13 @@ public class FamilyTree {
       }
   }
 
+  /**
+   * Printing method for rankings.
+   * @param rankData The data from the ranking calculations.
+   * @param length how long the ranking list should be, user defined or whole tree.
+   * @param descendants if this is for the descendants ranking or the kids ranking.
+   * @param name name of the person who's positions are being retrieved, null if general ranking.
+   */
   private static void printRankings(ArrayList<Integer> rankData, int length, boolean descendants, String name) {
       ArrayList<Person> topPeople = new ArrayList<>();
       Collections.sort(rankData);
@@ -441,10 +455,21 @@ public class FamilyTree {
       }
   }
 
+  /**
+   * Check if the user input is valid.
+   * @param inputArray the user input.
+   * @param parameters the number of parameters this action should take.
+   * @param numeric whether the input should be numeric or not.
+   * @return if the input is valid or not.
+   */
   private static boolean isValid(String[] inputArray, int parameters, boolean numeric) {
       return inputArray.length == parameters && (!numeric || tree.isNumeric(inputArray[1]));
   }
 
+  /**
+   * Retrieve and print the positions in each ranking set for the given name.
+   * @param name the name for the ranking positions to be retrieved.
+   */
   private static void getRankings(String name) {
       if (tree.getPeople().containsKey(name.toLowerCase())) {
           System.out.println("\nmost kids:");
@@ -456,6 +481,10 @@ public class FamilyTree {
       }
   }
 
+  /**
+   * For the given person, print their parents, siblings and children. Immediate family.
+   * @param name the name of the person.
+   */
   private static void getDetails(String name) {
       if (tree.getPeople().containsKey(name.toLowerCase())) {
           Person person = tree.getPeople().get(name.toLowerCase());
@@ -497,7 +526,8 @@ public class FamilyTree {
   }
 
   /**
-   *
+   * Given a person, count how many children they have.
+   * @param name the name of the person.
    */
   private static void countChildren(String name) {
       int kidCount = 0;

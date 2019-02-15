@@ -1,3 +1,7 @@
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+
+import java.io.BufferedWriter;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.*;
@@ -43,6 +47,79 @@ public class FamilyTree {
       e.printStackTrace();
     }
   }
+
+    private static void writeJSONOne() throws IOException {
+        BufferedWriter buffWriter = new BufferedWriter(new FileWriter("treeData.json"));
+        JSONArray people = new JSONArray();
+        for (Entry<String, Person> pair : tree.getPeople().entrySet()) {
+            ArrayList<String> added = new ArrayList<>();
+            JSONObject person = new JSONObject();
+            Person currentPerson =  pair.getValue();
+            person.put("name", currentPerson.getName());
+            JSONArray connections = new JSONArray();
+            for (Integer id : currentPerson.getFamilyIDs()) {
+                if (tree.getFamilies().get(id).getParents().contains(currentPerson)) {
+                    for (Person child : tree.getFamilies().get(id).getChildren()) {
+                        if (!added.contains(child.getName())) {
+                            added.add(child.getName());
+                            JSONObject jsonChild = new JSONObject();
+                            jsonChild.put("name", child.getName());
+                            jsonChild.put("relationship", "child");
+                            connections.add(jsonChild);
+                        }
+                    }
+                    if (tree.getFamilies().get(id).getParents().size() > 1) {
+                        for (Person parent : tree.getFamilies().get(id).getParents()) {
+                            if (!parent.equals(currentPerson)) {
+                                if (!added.contains(parent.getName())){
+                                    added.add(parent.getName());
+                                    if (tree.getFamilies().get(id).hasMarriage()) {
+                                        JSONObject jsonSpouse = new JSONObject();
+                                        jsonSpouse.put("name", parent.getName());
+                                        jsonSpouse.put("relationship", "spouse");
+                                        connections.add(jsonSpouse);
+                                    } else {
+                                        JSONObject jsonCoparent = new JSONObject();
+                                        jsonCoparent.put("name", parent.getName());
+                                        jsonCoparent.put("relationship", "coparent");
+                                        connections.add(jsonCoparent);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                } else {
+                    for (Person child : tree.getFamilies().get(id).getChildren()) {
+                        if (!child.equals(currentPerson)) {
+                            if (!added.contains(child.getName())){
+                                added.add(child.getName());
+                                JSONObject jsonSibling = new JSONObject();
+                                jsonSibling.put("name", child.getName());
+                                jsonSibling.put("relationship", "sibling");
+                                connections.add(jsonSibling);
+                            }
+                        }
+                    }
+                    for (Person parent : tree.getFamilies().get(id).getParents()) {
+                        if (!parent.equals(currentPerson)) {
+                            if (!added.contains(parent.getName())) {
+                                added.add(parent.getName());
+                                JSONObject jsonParent = new JSONObject();
+                                jsonParent.put("name", parent.getName());
+                                jsonParent.put("relationship", "parent");
+                                connections.add(jsonParent);
+                            }
+                        }
+                    }
+                }
+            }
+            added.clear();
+            person.put("connections", connections);
+            people.add(person);
+        }
+        buffWriter.write(people.toJSONString());
+        buffWriter.close();
+    }
 
   /**
    * Gets the details of the family from the user and passes it to the tree.
@@ -606,8 +683,13 @@ public class FamilyTree {
         boolean exitProgram = false;
         Scanner scanner = new Scanner(System.in);
         System.out.println("Usage: <command>, <parameter>, <parameter>\ntype 'help' for a list of commands");
-        String filePath = "./RawData.csv";
+        String filePath = "./FamTree/RawData.csv";
         tree = new Tree(filePath);
+        try {
+            writeJSONOne();
+        } catch(IOException ioe) {
+            ioe.printStackTrace();
+        }
         while (!exitProgram) {
             System.out.print(":");
             String input = scanner.nextLine();

@@ -1,7 +1,6 @@
 itsyaboicletsgo
 
 To run the program:
- - Make sure you're in the folder "FamTree"
  - type "java FamilyTree"
 
 If you want to update the csv, replace the file in the folder and make sure it's called "RawData.csv".

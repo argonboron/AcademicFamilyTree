@@ -13,6 +13,7 @@ class Person {
   private int distanceFromSource;
   private int numberOfChildren;
   private int numberOfDescendants;
+  boolean checked;
 
   /**
    * Getter.
@@ -69,6 +70,23 @@ class Person {
     return distanceFromSource;
   }
 
+    /**
+     * Getter.
+     * @return Checked.
+     */
+    boolean beenChecked() {
+      return checked;
+  }
+
+  /**
+   * Setter.
+   * @param newDistance new distance.
+   */
+  void setChecked(boolean checked) {
+    this.checked = checked;
+  }
+
+
   /**
    * Setter.
    * @param newDistance new distance.
@@ -101,6 +119,7 @@ class Person {
   Person(String name, int familyID) {
     this.name = name;
     familyIDs.add(familyID);
+    checked = false;
     distanceFromSource = 0;
   }
 }

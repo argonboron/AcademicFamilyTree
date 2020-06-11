@@ -201,27 +201,35 @@ public class FamilyTree {
   private static void getPath(Person sourcePerson, Person searchPerson) throws InterruptedException {
     ArrayList<Person> visited = new ArrayList<>();
     HashMap<Person, Person> predecessorMap = new HashMap<>();
-    ArrayBlockingQueue<Person> queue = new ArrayBlockingQueue<>(tree.getPeople().size() * 50);
+    ArrayBlockingQueue<Person> frontier = new ArrayBlockingQueue<>(tree.getPeople().size() * 50);
     ArrayList<Integer> famIDs;
     boolean found = false;
 
     visited.add(sourcePerson);
-    queue.add(sourcePerson);
+    frontier.add(sourcePerson);
     sourcePerson.setDistance(0);
 
-    while(!queue.isEmpty()) {
-      Person current = queue.remove();
+    while(!frontier.isEmpty()) {
+      //visit next
+      Person current = frontier.remove();
       famIDs = current.getFamilyIDs();
 
       for(Integer id: famIDs) {
         Family family = tree.getFamily(id);
+        //Visit all children
         for(Person person : family.getAllMembers()) {
+          //If unvisited
           if (!visited.contains(person)) {
             if(!person.getName().equals(current.getName())){
+              //Add to visited
               visited.add(person);
+              //Tell them their depth
               person.setDistance(current.getDistance()+1);
+              //Map child to parent
               predecessorMap.put(person, current);
-              queue.add(person);
+              //Add to frontier
+              frontier.add(person);
+              //Checkgoal
               if (person.getName().equals(searchPerson.getName())) {
                 found = true;
                 break;
@@ -336,19 +344,24 @@ public class FamilyTree {
    * @param generation how many generations deep the recursion has run.
    * @param print whether the generation details of this method are to be printed or not.
    */
-  private static void getGenerations(Person person, ArrayList<Family> families, int generation, boolean print) {
+  private static ArrayList<String> getGenerations(Person person, ArrayList<Family> families, int generation, boolean print, ArrayList<String> names) {
     int children = 0;
     StringBuilder generationLabel = new StringBuilder("Number of grandchildren: ");
     ArrayList<Family> newFamilies = new ArrayList<>();
     for(Family family: families) {
       for(Person child: family.getChildren()) {
-        if (isParent(child)) {
+        names.add(child.getName());
+        if (isParent(child) && !child.beenChecked() && !child.getName().equals(person.getName())) {
           for(Integer id: child.getFamilyIDs()) {
             if (isFamilyParent(child, tree.getFamilies().get(id)) && tree.getFamilies().get(id).getChildren().size() > 0) {
               children += tree.getFamilies().get(id).getChildren().size();
+              if (tree.checkIfChild(id, person)) {
+                children--;
+              }
               newFamilies.add(tree.getFamilies().get(id));
             }
           }
+          child.setChecked(true);
         }
       }
     }
@@ -361,7 +374,7 @@ public class FamilyTree {
           if (newFamilies.size() > 0) {
             generation++;
             person.addToDescendants(children);
-            getGenerations(person, newFamilies, generation, print);
+            getGenerations(person, newFamilies, generation, print, names);
           }
           break;
         case 1:
@@ -372,7 +385,7 @@ public class FamilyTree {
           if (newFamilies.size() > 0) {
             generation++;
             person.addToDescendants(children);
-            getGenerations(person, newFamilies, generation, print);
+            getGenerations(person, newFamilies, generation, print, names);
           }
           break;
         default:
@@ -387,7 +400,7 @@ public class FamilyTree {
             if (newFamilies.size() > 0) {
               generation++;
               person.addToDescendants(children);
-              getGenerations(person, newFamilies, generation, print);
+              getGenerations(person, newFamilies, generation, print, names);
             }
           } else {
             System.out.println("error");
@@ -395,6 +408,7 @@ public class FamilyTree {
           break;
       }
     }
+    return names;
   }
 
   /**
@@ -591,10 +605,13 @@ public class FamilyTree {
               }
           }
           if (kidCount > 0) {
-              getGenerations(pair.getValue(), parentalFamilies, 0, false);
+              ArrayList<String> names = getGenerations(pair.getValue(), parentalFamilies, 0, false, new ArrayList<>());
               pair.getValue().addToDescendants(kidCount);
               int descendants = pair.getValue().getNumberOfDescendants();
               descNums.add(descendants);
+              if (names.size() > 0) {
+                tree.clearChecked(names);
+              } 
           } else {
               pair.getValue().resetNumberOfDescendants();
           }
@@ -619,7 +636,7 @@ public class FamilyTree {
               }
           }
           System.out.println("\nNumber of children: " + kidCount);
-          getGenerations(tree.getPeople().get(name), parentalFamilies, 0, true);
+          getGenerations(tree.getPeople().get(name), parentalFamilies, 0, true, new ArrayList<>());
           parentalFamilies.clear();
           if (kidCount > 0) {
               listChildren(name);

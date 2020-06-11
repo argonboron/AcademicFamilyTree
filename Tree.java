@@ -2,6 +2,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.Map;
 
 /**
@@ -90,6 +91,25 @@ public class Tree {
       person = new Person(name, familyID);
       people.put(name.toLowerCase(), person);
       return person;
+    }
+  }
+
+  boolean checkIfChild(Integer familyID, Person person) {
+    for(Person child : this.families.get(familyID).getChildren()) {
+      if (child.getName().equals(person.getName())) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  void clearChecked(ArrayList<String> names) {
+    try {
+      for (String name : names) {
+        people.get(name.toLowerCase()).setChecked(false);    
+      }
+    } catch(NullPointerException e) {
+      System.out.println(e);
     }
   }
 
